@@ -31,7 +31,14 @@ class mobileid {
 
     private $mid_signature;                // Mobile ID signature (Base64 encoded)
     private $mid_MSSPtransID;              // Mobile ID MSSP transaction id
-    private $subscriberInfo;               // Mobile ID SubscriberInfo (array)
+    
+    public $geoFencingCountry;             // Mobile ID GeoFencing
+    public $geoFencingAccuracy;            // Mobile ID GeoFencing
+    public $geoFencingTime;                // Mobile ID GeoFencing
+    public $geoFencingDeviceConfidence;    // Mobile ID GeoFencing
+    public $geoFencingLocationConfidence;  // Mobile ID GeoFencing
+    public $geoFencingErrorCode;           // Mobile ID GeoFencing Error
+    public $geoFencingErrorMsg;            // Mobile ID GeoFencing Error
 
     /**
      * Mobile ID class
@@ -178,8 +185,14 @@ class mobileid {
         $this->mid_MSSPtransID = '';
         $this->mid_certificate = '';
         $this->mid_serialnuber = '';
-        $this->subscriberInfo = array();
-
+        $this->geoFencingCountry = '';
+        $this->geoFencingAccuracy = '';
+        $this->geoFencingTime = '';
+        $this->geoFencingDeviceConfidence = '';
+        $this->geoFencingLocationConfidence = '';
+        $this->geoFencingErrorCode = '';
+        $this->geoFencingErrorMsg = '';
+        
         $params = array(
             'MajorVersion' => 1,
             'MinorVersion' => 1,
@@ -209,7 +222,7 @@ class mobileid {
                     'UserLang' => $userlang,
                 ),
                 array(
-                    'Description' => array('mssURI' => 'http://mid.swisscom.ch/as#subscriberInfo')
+                    'Description' => array('mssURI' => 'http://mid.swisscom.ch/as#geofencing')
                 )
             )
         );
@@ -225,14 +238,16 @@ class mobileid {
         /* Get the MSSP Transaction ID */
         $this->mid_MSSPtransID  = $this->response->MSSP_TransID;
 
-        /* Get the Subscriber Informations */
-        if (isset($this->response->Status->StatusDetail->ServiceResponses->ServiceResponse->SubscriberInfo->Detail)) {
-            /* Get the detail as array */
-            $subscriberInfoDetails = array($this->response->Status->StatusDetail->ServiceResponses->ServiceResponse->SubscriberInfo->Detail);
-            /* Add 'value' as 'id' in the array */
-            foreach ($subscriberInfoDetails as $detail) {
-                $this->subscriberInfo[$detail->id] = $detail->value;
-            }
+        /* Get the Geofencing Information */
+        if (isset($this->response->Status->StatusDetail->ServiceResponses->ServiceResponse->GeoFencing->country)) {
+            $this->geoFencingCountry = $this->response->Status->StatusDetail->ServiceResponses->ServiceResponse->GeoFencing->country;
+            $this->geoFencingAccuracy = $this->response->Status->StatusDetail->ServiceResponses->ServiceResponse->GeoFencing->accuracy;
+            $this->geoFencingTimestamp = $this->response->Status->StatusDetail->ServiceResponses->ServiceResponse->GeoFencing->timestamp;
+            $this->geoFencingDeviceConfidence = $this->response->Status->StatusDetail->ServiceResponses->ServiceResponse->GeoFencing->deviceconfidence;
+            $this->geoFencingLocationConfidence = $this->response->Status->StatusDetail->ServiceResponses->ServiceResponse->GeoFencing->locationconfidence;    
+        } elseif (isset($this->response->Status->StatusDetail->ServiceResponses->ServiceResponse->GeoFencing->errorcode)) {
+            $this->geoFencingErrorCode = $this->response->Status->StatusDetail->ServiceResponses->ServiceResponse->GeoFencing->errorcode;
+            $this->geoFencingErrorMsg = $this->response->Status->StatusDetail->ServiceResponses->ServiceResponse->GeoFencing->errormessage;
         }
 
         /* Check the signature and get the signer */
@@ -406,19 +421,6 @@ class mobileid {
             $url = "<a href='" . $url . "' target='_blank'>" . $hyperlink . "</a>";
 
         return($url);
-    }
-
-    /**
-     * getSubscriberInfo - Returns subscriber information
-     * #params     string    ID of the subscriber info
-     * @return     string
-     */
-    public function getSubscriberInfo($id = '') {
-        $value = '';
-        if (array_key_exists($id, $this->subscriberInfo))
-            $value = $this->subscriberInfo[$id];
-
-        return($value);
     }
 
     /**

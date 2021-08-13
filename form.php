@@ -70,13 +70,33 @@ echo $app->getText('APP_SUBMIT_SUCCESS');
 $time_end = microtime(true);
 
 if (strlen($mobileIdRequest->mid_serialnumber)) {
-	echo ' '.str_replace('%s', $mobileIdRequest->mid_serialnumber, $app->getText('APP_SUBMIT_SUCCESS_SERIAL'));
+	echo '<br />'.str_replace('%s', $mobileIdRequest->mid_serialnumber, $app->getText('APP_SUBMIT_SUCCESS_SERIAL'));
+}
+
+/* GeoFencing Information */
+if (strlen($mobileIdRequest->geoFencingCountry)) {
+    $msg = '<p style="font-size:10px;">';
+    $msg .= "Geo Country = ".$mobileIdRequest->geoFencingCountry;
+    $msg .= "<br />Geo Accuracy [m] = ".$mobileIdRequest->geoFencingAccuracy;
+    $msg .= "<br />Geo Timestamp = ".$mobileIdRequest->geoFencingTimestamp;
+    $msg .= "<br />Geo Device Confidence [0..1] = ".$mobileIdRequest->geoFencingDeviceConfidence;
+    $msg .= "<br />Geo Location Confidence [0..1] = ".$mobileIdRequest->geoFencingLocationConfidence;
+    $msg .= "</p>";
+	echo $msg;
+} elseif (strlen($mobileIdRequest->geoFencingErrorCode)) {
+    $msg = '<p style="font-size:10px;">';
+    $msg .= "Geo Error Code = ".$mobileIdRequest->geoFencingErrorCode;
+    $msg .= "<br />Geo Error Message = ".$mobileIdRequest->geoFencingErrorMsg;
+    $msg .= "</p>";
+	echo $msg;
+} else {
+    echo '<br />';
 }
 
 /* Calculate the request duration */
 $time = $time_end - $time_start;
 
-echo '<br />'.str_replace('%s', number_format($time, 3), $app->getText('APP_SUBMIT_SUCCESS_DURATION'));
+echo str_replace('%s', number_format($time, 3), $app->getText('APP_SUBMIT_SUCCESS_DURATION'));
 
 /**
 * Mobileid set the mobileid error
